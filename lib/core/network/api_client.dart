@@ -200,15 +200,27 @@ class ApiClient {
           .timeout(ApiConfig.timeout);
 
       return _handleResponse(response);
-    } on SocketException catch (e) {
-      throw NetworkException('Network error connecting to ${uri.host}: ${e.message}');
+    } on SocketException {
+      throw NetworkException('Cannot reach server at ${uri.host}. Check your connection.');
     } on TimeoutException {
       throw const TimeoutException();
+    } on http.ClientException catch (e) {
+      // Covers "Connection closed before full header received" — happens when
+      // the Render free-tier server is waking up from sleep (cold start).
+      // Also covers general TLS / connection reset errors.
+      final msg = e.message.toLowerCase();
+      if (msg.contains('closed') || msg.contains('reset') || msg.contains('connection')) {
+        throw const NetworkException(
+          'Server is waking up — please wait a moment and try again. '
+          '(Render free tier sleeps after inactivity.)',
+        );
+      }
+      throw NetworkException('Connection error: ${e.message}');
     } on FormatException catch (e) {
-      throw ApiException('Malformed response received from server: ${e.message}');
+      throw ApiException('Malformed response from server: ${e.message}');
     } catch (e) {
       if (e is ApiException) rethrow;
-      throw ApiException('Unexpected communication error: $e');
+      throw ApiException('Unexpected error: $e');
     }
   }
 
@@ -220,15 +232,25 @@ class ApiClient {
           .timeout(ApiConfig.timeout);
 
       return _handleResponse(response);
-    } on SocketException catch (e) {
-      throw NetworkException('Network error connecting to ${uri.host}: ${e.message}');
+    } on SocketException {
+      throw NetworkException('Cannot reach server at ${uri.host}. Check your connection.');
     } on TimeoutException {
       throw const TimeoutException();
+    } on http.ClientException catch (e) {
+      // Same cold-start / connection reset handling as GET
+      final msg = e.message.toLowerCase();
+      if (msg.contains('closed') || msg.contains('reset') || msg.contains('connection')) {
+        throw const NetworkException(
+          'Server is waking up — please wait a moment and try again. '
+          '(Render free tier sleeps after inactivity.)',
+        );
+      }
+      throw NetworkException('Connection error: ${e.message}');
     } on FormatException catch (e) {
-      throw ApiException('Malformed response received from server: ${e.message}');
+      throw ApiException('Malformed response from server: ${e.message}');
     } catch (e) {
       if (e is ApiException) rethrow;
-      throw ApiException('Unexpected communication error: $e');
+      throw ApiException('Unexpected error: $e');
     }
   }
 

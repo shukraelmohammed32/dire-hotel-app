@@ -90,7 +90,7 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
     super.dispose();
   }
 
-  Future<void> _fetchPricing() async {
+  Future<void> _fetchPricing({bool isRetry = false}) async {
     setState(() {
       _isLoadingPricing = true;
       _pricingError = null;
@@ -112,8 +112,16 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
       }
     } catch (e) {
       if (mounted) {
+        // Auto-retry once after 8 seconds on first cold-start connection drop
+        if (!isRetry) {
+          await Future<void>.delayed(const Duration(seconds: 8));
+          if (mounted) {
+            await _fetchPricing(isRetry: true);
+          }
+          return;
+        }
         setState(() {
-          _pricingError = e.toString().replaceFirst('ApiException: ', '');
+          _pricingError = e.toString().replaceFirst('ApiException: ', '').replaceFirst('NetworkException: ', '');
           _isLoadingPricing = false;
         });
       }
@@ -490,8 +498,55 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
             ],
           ),
           const SizedBox(height: 10),
-          if (_pricingError != null)
-            Text(_pricingError!, style: TextStyle(color: Colors.red.shade800, fontSize: 12))
+          if (_isLoadingPricing && _pricing == null)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Text(
+                'Fetching live price from server…',
+                style: TextStyle(color: AppColors.muted, fontSize: 12),
+              ),
+            )
+          else if (_pricingError != null)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.wifi_off_rounded, color: Colors.orange.shade700, size: 18),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _pricingError!,
+                        style: TextStyle(color: Colors.orange.shade900, fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                TextButton.icon(
+                  onPressed: _isLoadingPricing ? null : _fetchPricing,
+                  icon: const Icon(Icons.refresh_rounded, size: 16),
+                  label: const Text('Retry', style: TextStyle(fontSize: 12)),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.burgundy,
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                ),
+                // Show estimated price from room base rate as fallback
+                const Divider(height: 16),
+                _priceRow(
+                  'Estimated nightly rate',
+                  '${formatEtb(widget.room.pricePerNight)} ETB',
+                ),
+                const Text(
+                  'Final price confirmed after server reconnects.',
+                  style: TextStyle(color: AppColors.muted, fontSize: 11),
+                ),
+              ],
+            )
           else if (_pricing != null) ...[
             _priceRow(
               '${formatEtb(_pricing!.nightlyRate.round())} ETB × ${_pricing!.nights} ${_pricing!.nights == 1 ? "night" : "nights"}',

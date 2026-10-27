@@ -2,13 +2,13 @@
 class ApiConfig {
   ApiConfig._();
 
-  /// Default API base URL. Override at build time via:
+  /// Default API base URL points to the live Render deployment.
+  /// Override at build time via --dart-define for local dev:
   ///   --dart-define=API_BASE_URL=http://10.0.2.2:3000   (Android emulator → host localhost)
   ///   --dart-define=API_BASE_URL=http://192.168.x.x:3000 (LAN / real device)
-  ///   --dart-define=API_BASE_URL=https://your-domain.com (production)
   static const String _defaultBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://10.0.2.2:3000',
+    defaultValue: 'https://ras-hotel-api.onrender.com',
   );
 
   static String _activeBaseUrl = _defaultBaseUrl;
@@ -16,7 +16,7 @@ class ApiConfig {
   /// Returns the current active base URL without trailing slash.
   static String get baseUrl => _normalizeUrl(_activeBaseUrl);
 
-  /// Allows dynamically updating the base URL at runtime (e.g. settings or tests).
+  /// Allows dynamically updating the base URL at runtime (e.g. settings screen).
   static void setBaseUrl(String newUrl) {
     if (newUrl.trim().isNotEmpty) {
       _activeBaseUrl = newUrl.trim();
@@ -28,8 +28,9 @@ class ApiConfig {
     _activeBaseUrl = _defaultBaseUrl;
   }
 
-  /// Default request timeout duration.
-  static const Duration timeout = Duration(seconds: 15);
+  /// Request timeout. 60s to handle Render free-tier cold starts
+  /// (server spins down after inactivity and needs ~30-50s to wake up).
+  static const Duration timeout = Duration(seconds: 60);
 
   // API Endpoints
   static const String healthPath = '/api/health';
