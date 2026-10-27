@@ -275,7 +275,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                                 child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.burgundy),
                               ),
                               SizedBox(width: 8),
-                              Text('Checking server booking conflicts...', style: TextStyle(fontSize: 12, color: AppColors.muted)),
+                              Text('Checking availability…', style: TextStyle(fontSize: 12, color: AppColors.muted)),
                             ],
                           ),
                         ] else if (_availabilityMessage != null) ...[

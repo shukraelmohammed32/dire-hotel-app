@@ -61,7 +61,7 @@ class ApiClient {
 
     final roomJson = json['room'] as Map<String, dynamic>?;
     if (roomJson == null) {
-      throw const ApiException('Room data missing in server response', statusCode: 404);
+      throw const ApiException('This room is not available right now. Please try another.', statusCode: 404);
     }
     return Room.fromJson(roomJson);
   }
@@ -121,7 +121,7 @@ class ApiClient {
     final json = await _post(uri, payload);
     final pricingJson = json['pricing'] as Map<String, dynamic>?;
     if (pricingJson == null) {
-      throw const ApiException('Pricing data missing in server response');
+      throw const ApiException('Unable to calculate pricing. Please try again.');
     }
     return Pricing.fromJson(pricingJson);
   }
@@ -133,7 +133,7 @@ class ApiClient {
 
     final bookingJson = json['booking'] as Map<String, dynamic>?;
     if (bookingJson == null) {
-      throw const ApiException('Booking confirmation missing in server response');
+      throw const ApiException('Your booking could not be confirmed. Please try again.');
     }
     return Booking.fromJson(bookingJson);
   }
@@ -171,7 +171,7 @@ class ApiClient {
 
     final bookingJson = json['booking'] as Map<String, dynamic>?;
     if (bookingJson == null) {
-      throw const ApiException('Reservation not found', statusCode: 404);
+      throw const ApiException('Reservation not found. Please check your confirmation number.', statusCode: 404);
     }
     return Booking.fromJson(bookingJson);
   }
@@ -201,26 +201,23 @@ class ApiClient {
 
       return _handleResponse(response);
     } on SocketException {
-      throw NetworkException('Cannot reach server at ${uri.host}. Check your connection.');
+      throw const NetworkException();
     } on TimeoutException {
       throw const TimeoutException();
     } on http.ClientException catch (e) {
-      // Covers "Connection closed before full header received" — happens when
-      // the Render free-tier server is waking up from sleep (cold start).
-      // Also covers general TLS / connection reset errors.
+      // Covers connection closed / reset errors (e.g. server cold start).
       final msg = e.message.toLowerCase();
       if (msg.contains('closed') || msg.contains('reset') || msg.contains('connection')) {
         throw const NetworkException(
-          'Server is waking up — please wait a moment and try again. '
-          '(Render free tier sleeps after inactivity.)',
+          'Service is temporarily unavailable. Please wait a moment and try again.',
         );
       }
-      throw NetworkException('Connection error: ${e.message}');
-    } on FormatException catch (e) {
-      throw ApiException('Malformed response from server: ${e.message}');
+      throw const NetworkException();
+    } on FormatException {
+      throw const ApiException('Something went wrong. Please try again.');
     } catch (e) {
       if (e is ApiException) rethrow;
-      throw ApiException('Unexpected error: $e');
+      throw const ApiException('Something went wrong. Please try again.');
     }
   }
 
@@ -233,24 +230,23 @@ class ApiClient {
 
       return _handleResponse(response);
     } on SocketException {
-      throw NetworkException('Cannot reach server at ${uri.host}. Check your connection.');
+      throw const NetworkException();
     } on TimeoutException {
       throw const TimeoutException();
     } on http.ClientException catch (e) {
-      // Same cold-start / connection reset handling as GET
+      // Same cold-start / connection reset handling as GET.
       final msg = e.message.toLowerCase();
       if (msg.contains('closed') || msg.contains('reset') || msg.contains('connection')) {
         throw const NetworkException(
-          'Server is waking up — please wait a moment and try again. '
-          '(Render free tier sleeps after inactivity.)',
+          'Service is temporarily unavailable. Please wait a moment and try again.',
         );
       }
-      throw NetworkException('Connection error: ${e.message}');
-    } on FormatException catch (e) {
-      throw ApiException('Malformed response from server: ${e.message}');
+      throw const NetworkException();
+    } on FormatException {
+      throw const ApiException('Something went wrong. Please try again.');
     } catch (e) {
       if (e is ApiException) rethrow;
-      throw ApiException('Unexpected error: $e');
+      throw const ApiException('Something went wrong. Please try again.');
     }
   }
 
@@ -274,7 +270,7 @@ class ApiClient {
 
     final serverMessage = bodyJson['message'] as String? ??
         bodyJson['error'] as String? ??
-        'Server returned error code ${response.statusCode}';
+        'Something went wrong. Please try again.';
 
     if (response.statusCode == 409 || bodyJson['code'] == 'BOOKING_CONFLICT') {
       throw BookingConflictException(serverMessage);

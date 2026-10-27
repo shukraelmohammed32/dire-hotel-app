@@ -502,7 +502,7 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 8),
               child: Text(
-                'Fetching live price from server…',
+                'Calculating price…',
                 style: TextStyle(color: AppColors.muted, fontSize: 12),
               ),
             )
@@ -513,12 +513,12 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.wifi_off_rounded, color: Colors.orange.shade700, size: 18),
+                    const Icon(Icons.wifi_off_rounded, color: AppColors.muted, size: 18),
                     const SizedBox(width: 8),
-                    Expanded(
+                    const Expanded(
                       child: Text(
-                        _pricingError!,
-                        style: TextStyle(color: Colors.orange.shade900, fontSize: 12),
+                        'Unable to load price. Please check your connection.',
+                        style: TextStyle(color: AppColors.muted, fontSize: 12),
                       ),
                     ),
                   ],
@@ -535,15 +535,10 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                 ),
-                // Show estimated price from room base rate as fallback
                 const Divider(height: 16),
                 _priceRow(
-                  'Estimated nightly rate',
+                  'Nightly rate',
                   '${formatEtb(widget.room.pricePerNight)} ETB',
-                ),
-                const Text(
-                  'Final price confirmed after server reconnects.',
-                  style: TextStyle(color: AppColors.muted, fontSize: 11),
                 ),
               ],
             )

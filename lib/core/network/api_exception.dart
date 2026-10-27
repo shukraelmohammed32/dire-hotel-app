@@ -12,23 +12,21 @@ class ApiException implements Exception {
   final dynamic details;
   final bool isNetworkError;
 
+  /// Returns only the human-readable message — no technical codes.
   @override
-  String toString() {
-    if (statusCode != null) {
-      return 'ApiException ($statusCode): $message';
-    }
-    return 'ApiException: $message';
-  }
+  String toString() => message;
 }
 
 class NetworkException extends ApiException {
-  const NetworkException([super.message = 'Unable to reach the Ras Hotel server. Please check your internet connection.'])
-      : super(isNetworkError: true);
+  const NetworkException([
+    super.message = 'No connection. Please check your internet and try again.',
+  ]) : super(isNetworkError: true);
 }
 
 class TimeoutException extends ApiException {
-  const TimeoutException([super.message = 'Server request timed out. Please try again.'])
-      : super(isNetworkError: true);
+  const TimeoutException([
+    super.message = 'Request timed out. Please try again.',
+  ]) : super(isNetworkError: true);
 }
 
 class ServerException extends ApiException {
@@ -36,11 +34,14 @@ class ServerException extends ApiException {
 }
 
 class BookingConflictException extends ApiException {
-  const BookingConflictException([super.message = 'Room is already booked for the selected dates. Please choose another date or room.'])
-      : super(statusCode: 409);
+  const BookingConflictException([
+    super.message =
+        'This room is already booked for those dates. Please choose different dates or another room.',
+  ]) : super(statusCode: 409);
 }
 
 class AuthorizationException extends ApiException {
-  const AuthorizationException([super.message = 'You are not authorized to perform this operation.'])
-      : super(statusCode: 403);
+  const AuthorizationException([
+    super.message = 'You are not authorised to perform this action.',
+  ]) : super(statusCode: 403);
 }

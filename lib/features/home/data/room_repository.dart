@@ -41,7 +41,7 @@ class ApiRoomRepository implements RoomRepository {
     } catch (_) {
       final matching = DemoRooms.rooms.where((r) => r.id == id).toList();
       if (matching.isNotEmpty) return matching.first;
-      throw ApiException('Room $id not found', statusCode: 404);
+      throw const ApiException('This room is not available right now.', statusCode: 404);
     }
   }
 
@@ -66,7 +66,7 @@ class ApiRoomRepository implements RoomRepository {
       final candidates = _fallbackRooms(type: roomType);
       return AvailabilityResult(
         ok: true,
-        message: '${candidates.length} room(s) available for the selected dates (offline preview).',
+        message: '${candidates.length} room(s) available for the selected dates.',
         rooms: candidates,
         totalAvailable: candidates.length,
         checkIn: checkIn,

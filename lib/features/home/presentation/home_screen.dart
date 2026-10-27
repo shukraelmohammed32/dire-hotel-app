@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/presentation/info_placeholder_screen.dart';
 import '../../../core/theme/app_theme.dart';
 import '../domain/room.dart';
 import 'controllers/rooms_controller.dart';
@@ -78,60 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     SliverToBoxAdapter(
                       child: _buildFeaturedSection(horizontalPadding),
                     ),
-                    SliverPadding(
-                      padding: EdgeInsets.fromLTRB(horizontalPadding, 24, horizontalPadding, 28),
-                      sliver: SliverToBoxAdapter(
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(22),
-                          onTap: _openLiveIntegrationDetails,
-                          child: Container(
-                            padding: const EdgeInsets.all(18),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(22),
-                              border: Border.all(color: AppColors.border),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: .02),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 6),
-                                ),
-                              ],
-                            ),
-                            child: const Row(
-                              children: [
-                                Icon(Icons.cloud_done_outlined, color: AppColors.gold, size: 24),
-                                SizedBox(width: 13),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Connected to Ras Hotel API',
-                                        style: TextStyle(
-                                          color: AppColors.ink,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                      SizedBox(height: 2),
-                                      Text(
-                                        'Real-time inventory & server-side conflict detection.',
-                                        style: TextStyle(
-                                          color: AppColors.muted,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Icon(Icons.arrow_forward_ios_rounded,
-                                    color: AppColors.muted, size: 15),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+                    const SliverPadding(padding: EdgeInsets.only(bottom: 28)),
                   ],
                 ),
               );
@@ -386,12 +332,12 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.cloud_off_rounded, size: 36, color: AppColors.muted),
+            const Icon(Icons.hotel_outlined, size: 36, color: AppColors.muted),
             const SizedBox(height: 8),
-            Text(
-              'Unable to load rooms: ${_controller.errorMessage}',
+            const Text(
+              'Rooms unavailable right now.',
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.ink, fontSize: 13),
+              style: TextStyle(color: AppColors.ink, fontSize: 13),
             ),
             const SizedBox(height: 12),
             ElevatedButton.icon(
@@ -442,7 +388,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _showNotificationsPlaceholder() {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Notifications preview is not connected yet.')),
+      const SnackBar(content: Text('No new notifications.')),
     );
   }
 
@@ -530,19 +476,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void _openRoom(Room room) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(builder: (_) => RoomDetailScreen(room: room)),
-    );
-  }
-
-  void _openLiveIntegrationDetails() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => const InfoPlaceholderScreen(
-          title: 'Connected to Ras Hotel API',
-          message:
-              'Connected to the Next.js 16 backend with PostgreSQL & Prisma. Room inventory and booking conflict checks are verified live.',
-          icon: Icons.verified_outlined,
-        ),
-      ),
     );
   }
 }

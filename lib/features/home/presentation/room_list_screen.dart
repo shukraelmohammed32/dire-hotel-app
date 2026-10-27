@@ -118,7 +118,7 @@ class _RoomListScreenState extends State<RoomListScreen> {
           children: [
             CircularProgressIndicator(color: AppColors.burgundy),
             SizedBox(height: 14),
-            Text('Loading rooms from server...', style: TextStyle(color: AppColors.muted)),
+            Text('Loading rooms…', style: TextStyle(color: AppColors.muted)),
           ],
         ),
       );
