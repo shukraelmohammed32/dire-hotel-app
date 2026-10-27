@@ -1,10 +1,22 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import 'core/network/api_config.dart';
 import 'core/theme/app_theme.dart';
 import 'features/onboarding/presentation/onboarding_screen.dart';
 import 'features/splash/presentation/splash_screen.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Log active API base URL so it's visible in the debug console when starting.
+  if (kDebugMode) {
+    debugPrint('╔══════════════════════════════════════════════════════');
+    debugPrint('║  Ras Hotel API → ${ApiConfig.baseUrl}');
+    debugPrint('║  To change: --dart-define=API_BASE_URL=http://...');
+    debugPrint('╚══════════════════════════════════════════════════════');
+  }
+
   runApp(const RasHotelApp());
 }
 

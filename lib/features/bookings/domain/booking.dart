@@ -52,27 +52,74 @@ class Booking {
       return DateTime.tryParse(val.toString()) ?? DateTime.now();
     }
 
+    // The API returns pricing as a flat object inside the booking:
+    // { nights, nightlyRate, subtotal, vatAmount, municipalTax, serviceCharge, totalEtb, currency }
     final pricingJson = json['pricing'] is Map<String, dynamic>
         ? json['pricing'] as Map<String, dynamic>
         : <String, dynamic>{};
 
+    // The API returns room as a flat object:
+    // { id, number, floor, type, capacity, baseRate }
     final roomJson = json['room'] is Map<String, dynamic>
         ? json['room'] as Map<String, dynamic>
         : <String, dynamic>{};
 
+    // Guest object: { id, name, phone, email, ... }
     final guestJson = json['guest'] is Map<String, dynamic>
         ? json['guest'] as Map<String, dynamic>
         : <String, dynamic>{};
 
+    // Invoice object: { id, invoiceNo, total, status }
     final invoiceJson = json['invoice'] is Map<String, dynamic>
         ? json['invoice'] as Map<String, dynamic>
         : <String, dynamic>{};
 
-    final total = pricingJson['totalEtb'] is num
-        ? (pricingJson['totalEtb'] as num).toDouble()
-        : invoiceJson['total'] is num
-            ? (invoiceJson['total'] as num).toDouble()
+    // nights: directly on booking (from GET list) or in pricing (both POST and GET return it)
+    final nights = json['nights'] is int
+        ? json['nights'] as int
+        : pricingJson['nights'] is int
+            ? pricingJson['nights'] as int
+            : int.tryParse(json['nights']?.toString() ?? '') ??
+              int.tryParse(pricingJson['nights']?.toString() ?? '') ??
+              1;
+
+    // totalEtb: from pricing.totalEtb or invoice.total
+    double parseDouble(dynamic val) {
+      if (val == null) return 0.0;
+      if (val is num) return val.toDouble();
+      return double.tryParse(val.toString()) ?? 0.0;
+    }
+
+    final total = pricingJson['totalEtb'] != null
+        ? parseDouble(pricingJson['totalEtb'])
+        : invoiceJson['total'] != null
+            ? parseDouble(invoiceJson['total'])
             : 0.0;
+
+    // Build a full pricing map by merging the room context when available
+    // (The booking-list API doesn't include roomId/type in pricing, so pull from room)
+    final fullPricingJson = <String, dynamic>{
+      'roomId': pricingJson['roomId'] ?? roomJson['id'] ?? '',
+      'roomType': pricingJson['roomType'] ?? roomJson['type'] ?? 'Standard Room',
+      'roomNumber': pricingJson['roomNumber'] ?? roomJson['number'] ?? '',
+      'floor': pricingJson['floor'] ?? roomJson['floor'] ?? 1,
+      'capacity': pricingJson['capacity'] ?? roomJson['capacity'] ?? 2,
+      'checkIn': pricingJson['checkIn'] ?? json['checkInDate'],
+      'checkOut': pricingJson['checkOut'] ?? json['checkOutDate'],
+      'nights': nights,
+      'adults': json['adults'] ?? 1,
+      'children': json['children'] ?? 0,
+      'nightlyRate': pricingJson['nightlyRate'] ?? roomJson['baseRate'] ?? 0,
+      'subtotal': pricingJson['subtotal'] ?? 0,
+      'vatRate': pricingJson['vatRate'] ?? 15,
+      'vatAmount': pricingJson['vatAmount'] ?? 0,
+      'municipalRate': pricingJson['municipalRate'] ?? 0,
+      'municipalTax': pricingJson['municipalTax'] ?? 0,
+      'serviceRate': pricingJson['serviceRate'] ?? 0,
+      'serviceCharge': pricingJson['serviceCharge'] ?? 0,
+      'totalEtb': total,
+      'currency': pricingJson['currency'] ?? 'ETB',
+    };
 
     return Booking(
       id: (json['id'] ?? '').toString(),
@@ -80,16 +127,12 @@ class Booking {
       status: (json['status'] ?? 'CONFIRMED').toString().toUpperCase(),
       checkInDate: parseDate(json['checkInDate']),
       checkOutDate: parseDate(json['checkOutDate']),
-      nights: json['nights'] is int
-          ? json['nights'] as int
-          : pricingJson['nights'] is int
-              ? pricingJson['nights'] as int
-              : 1,
+      nights: nights,
       adults: json['adults'] is int ? json['adults'] as int : 1,
       children: json['children'] is int ? json['children'] as int : 0,
       createdAt: parseDate(json['createdAt']),
       specialRequests: json['specialRequests'] as String?,
-      pricing: Pricing.fromJson(pricingJson),
+      pricing: Pricing.fromJson(fullPricingJson),
       room: Room.fromJson(roomJson),
       guestName: (guestJson['name'] ?? 'Guest').toString(),
       guestPhone: (guestJson['phone'] ?? '').toString(),

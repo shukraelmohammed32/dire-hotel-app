@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:mobile/core/network/api_client.dart';
 import 'package:mobile/core/network/api_exception.dart';
@@ -9,10 +11,12 @@ class BookingsController extends ChangeNotifier {
       : _apiClient = apiClient ?? ApiClient();
 
   final ApiClient _apiClient;
+  Timer? _pollTimer;
 
   bool _isLoading = false;
   String? _errorMessage;
   List<Booking> _bookings = [];
+  DateTime? _lastRefreshed;
 
   bool _isCancelling = false;
   String? _cancelError;
@@ -22,6 +26,7 @@ class BookingsController extends ChangeNotifier {
   List<Booking> get bookings => _bookings;
   bool get isCancelling => _isCancelling;
   String? get cancelError => _cancelError;
+  DateTime? get lastRefreshed => _lastRefreshed;
 
   List<Booking> get activeBookings =>
       _bookings.where((b) => b.isActive).toList();
@@ -31,6 +36,23 @@ class BookingsController extends ChangeNotifier {
 
   List<Booking> get cancelledBookings =>
       _bookings.where((b) => b.isCancelled).toList();
+
+  /// Starts auto-polling every [intervalSeconds] seconds as long as the
+  /// customer session has an identity. Call [stopPolling] or [dispose] to stop.
+  void startPolling({int intervalSeconds = 30}) {
+    _pollTimer?.cancel();
+    _pollTimer = Timer.periodic(Duration(seconds: intervalSeconds), (_) {
+      if (CustomerSession.instance.hasIdentity) {
+        loadBookings();
+      }
+    });
+  }
+
+  /// Stops the background polling timer.
+  void stopPolling() {
+    _pollTimer?.cancel();
+    _pollTimer = null;
+  }
 
   Future<void> loadBookings({String? phone}) async {
     final targetPhone = phone ?? CustomerSession.instance.phone;
@@ -49,6 +71,7 @@ class BookingsController extends ChangeNotifier {
       final fetched = await _apiClient.getCustomerBookings(phone: targetPhone);
       _bookings = fetched;
       _errorMessage = null;
+      _lastRefreshed = DateTime.now();
     } on AuthorizationException catch (e) {
       _errorMessage = e.message;
       _bookings = [];
@@ -60,6 +83,12 @@ class BookingsController extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  /// Called after a booking is successfully created from [BookingFlowSheet].
+  /// Immediately reloads the list so the new booking appears right away.
+  Future<void> onBookingCreated({String? phone}) async {
+    await loadBookings(phone: phone);
   }
 
   Future<bool> cancelBooking({
@@ -95,5 +124,11 @@ class BookingsController extends ChangeNotifier {
       _isCancelling = false;
       notifyListeners();
     }
+  }
+
+  @override
+  void dispose() {
+    stopPolling();
+    super.dispose();
   }
 }

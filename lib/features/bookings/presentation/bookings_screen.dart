@@ -33,10 +33,13 @@ class _BookingsScreenState extends State<BookingsScreen> {
       _phoneInputController.text = sessionPhone;
       _controller.loadBookings(phone: sessionPhone);
     }
+    // Auto-refresh every 30 s while the screen is open
+    _controller.startPolling(intervalSeconds: 30);
   }
 
   @override
   void dispose() {
+    _controller.stopPolling();
     _phoneInputController.dispose();
     super.dispose();
   }

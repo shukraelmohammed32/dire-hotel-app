@@ -2,11 +2,13 @@
 class ApiConfig {
   ApiConfig._();
 
-  /// Default production API base URL. Can be overridden at build time via:
-  /// `--dart-define=API_BASE_URL=https://your-domain.com`
+  /// Default API base URL. Override at build time via:
+  ///   --dart-define=API_BASE_URL=http://10.0.2.2:3000   (Android emulator → host localhost)
+  ///   --dart-define=API_BASE_URL=http://192.168.x.x:3000 (LAN / real device)
+  ///   --dart-define=API_BASE_URL=https://your-domain.com (production)
   static const String _defaultBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://jalo-hotel.vercel.app',
+    defaultValue: 'http://10.0.2.2:3000',
   );
 
   static String _activeBaseUrl = _defaultBaseUrl;
