@@ -5,7 +5,7 @@ import 'package:mobile/features/home/domain/room.dart';
 import 'package:mobile/features/home/presentation/room_detail_screen.dart';
 
 void main() {
-  testWidgets('RoomDetailScreen renders real room info and disabled booking button', (tester) async {
+  testWidgets('RoomDetailScreen renders real room info and opens booking sheet', (tester) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() {
@@ -41,17 +41,17 @@ void main() {
     expect(find.text('4,500 ETB'), findsOneWidget);
     expect(find.text('AVAILABLE'), findsOneWidget);
 
-    // Verify booking button is present and explains verification state
-    final bookingButtonFinder = find.text('Book room (disabled during verification)');
+    // Verify booking button is active
+    final bookingButtonFinder = find.text('Book this room');
     expect(bookingButtonFinder, findsOneWidget);
 
-    // Tap button to verify snackbar notice
+    // Tap button to verify booking sheet opens
     await tester.tap(bookingButtonFinder);
-    await tester.pump();
+    await tester.pumpAndSettle();
 
-    expect(
-      find.text('Booking creation will be enabled after room listing & availability are verified.'),
-      findsOneWidget,
-    );
+    expect(find.text('Reserve Room'), findsOneWidget);
+    expect(find.text('1. Stay Dates & Guests'), findsOneWidget);
+    expect(find.text('2. Price Breakdown (ETB)'), findsOneWidget);
+    expect(find.text('3. Guest Information'), findsOneWidget);
   });
 }

@@ -569,10 +569,12 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
           ),
         ),
         const SizedBox(height: 12),
-        Row(
+        Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 8,
+          runSpacing: 8,
           children: [
             const Text('Guest Nationality:', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-            const SizedBox(width: 12),
             ChoiceChip(
               label: const Text('Ethiopian'),
               selected: !_isForeignGuest,
@@ -585,7 +587,6 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
                 }
               },
             ),
-            const SizedBox(width: 8),
             ChoiceChip(
               label: const Text('Foreign Guest'),
               selected: _isForeignGuest,
