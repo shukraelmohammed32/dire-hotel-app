@@ -2,15 +2,13 @@ import '../domain/room.dart';
 
 /// Seeded rooms aligned with PostgreSQL / Prisma backend schema.
 abstract final class DemoRooms {
-  static const rooms = [
+  static const List<Room> rooms = <Room>[
     Room(
       id: 'room-201',
       number: '201',
       floor: 2,
       type: 'Superior King Suite',
-      name: 'Superior King Suite',
       description: 'A generous retreat with private balcony, mountain views, and quiet evening lounge seating',
-      pricePerNight: 4500,
       baseRate: 4500.0,
       capacity: 2,
       imageAssetPath: 'assets/images/room_deluxe.png',
@@ -25,9 +23,7 @@ abstract final class DemoRooms {
       number: '101',
       floor: 1,
       type: 'Standard Room',
-      name: 'Standard Room',
       description: 'Practical comfort with work desk, satellite TV, high-speed Wi-Fi, and private bathroom',
-      pricePerNight: 2800,
       baseRate: 2800.0,
       capacity: 2,
       imageAssetPath: 'assets/images/room_dining.png',
@@ -41,9 +37,7 @@ abstract final class DemoRooms {
       number: '301',
       floor: 3,
       type: 'Family Suite',
-      name: 'Family Suite',
       description: 'Generous multi-room suite accommodating up to four guests with panoramic city views',
-      pricePerNight: 6200,
       baseRate: 6200.0,
       capacity: 4,
       imageAssetPath: 'assets/images/room_wellness.png',
