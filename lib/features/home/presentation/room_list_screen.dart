@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/price_formatter.dart';
+import '../../bookings/presentation/controllers/bookings_controller.dart';
+import '../../shell/presentation/app_shell.dart';
 import '../domain/room.dart';
 import 'controllers/rooms_controller.dart';
 import 'room_detail_screen.dart';
@@ -11,10 +13,14 @@ class RoomListScreen extends StatefulWidget {
     super.key,
     this.initialRooms,
     this.initialController,
+    this.onNavigateToTab,
+    this.bookingsController,
   });
 
   final List<Room>? initialRooms;
   final RoomsController? initialController;
+  final NavigateToTabCallback? onNavigateToTab;
+  final BookingsController? bookingsController;
 
   @override
   State<RoomListScreen> createState() => _RoomListScreenState();
@@ -186,7 +192,13 @@ class _RoomListScreenState extends State<RoomListScreen> {
         return _RoomListTile(
           room: room,
           onTap: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(builder: (_) => RoomDetailScreen(room: room)),
+            MaterialPageRoute<void>(
+              builder: (_) => RoomDetailScreen(
+                room: room,
+                onNavigateToTab: widget.onNavigateToTab,
+                bookingsController: widget.bookingsController,
+              ),
+            ),
           ),
         );
       },

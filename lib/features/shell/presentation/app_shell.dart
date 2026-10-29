@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../bookings/presentation/bookings_screen.dart';
+import '../../bookings/presentation/controllers/bookings_controller.dart';
 import '../../discover/presentation/discover_screen.dart';
 import '../../home/presentation/home_screen.dart';
 import '../../profile/presentation/profile_screen.dart';
+
+/// Callback type given to child screens so they can request a tab switch
+/// (and optional post-switch action) without knowing about AppShell directly.
+typedef NavigateToTabCallback = void Function(int tabIndex, {VoidCallback? afterSwitch});
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
@@ -16,15 +21,34 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   int _selectedIndex = 0;
 
-  static const _screens = [
-    HomeScreen(),
-    DiscoverScreen(),
-    BookingsScreen(),
-    ProfileScreen(),
-  ];
+  /// Single BookingsController instance shared across the shell so that a
+  /// successful booking in HomeScreen / RoomDetailScreen can trigger a reload
+  /// in the Bookings tab without rebuilding or re-creating anything.
+  final BookingsController _bookingsController = BookingsController();
+
+  /// Switches to [tabIndex] and, after the frame settles, fires [afterSwitch].
+  void _navigateToTab(int tabIndex, {VoidCallback? afterSwitch}) {
+    setState(() => _selectedIndex = tabIndex);
+    if (afterSwitch != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => afterSwitch());
+    }
+  }
+
+  @override
+  void dispose() {
+    _bookingsController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final screens = [
+      HomeScreen(onNavigateToTab: _navigateToTab, bookingsController: _bookingsController),
+      const DiscoverScreen(),
+      BookingsScreen(controller: _bookingsController),
+      const ProfileScreen(),
+    ];
+
     return Scaffold(
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 260),
@@ -32,7 +56,7 @@ class _AppShellState extends State<AppShell> {
         switchOutCurve: Curves.easeInCubic,
         child: KeyedSubtree(
           key: ValueKey(_selectedIndex),
-          child: IndexedStack(index: _selectedIndex, children: _screens),
+          child: IndexedStack(index: _selectedIndex, children: screens),
         ),
       ),
       bottomNavigationBar: NavigationBar(

@@ -4,6 +4,8 @@ import '../../../core/network/api_client.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/price_formatter.dart';
 import '../../bookings/presentation/booking_flow_sheet.dart';
+import '../../bookings/presentation/controllers/bookings_controller.dart';
+import '../../shell/presentation/app_shell.dart';
 import '../domain/room.dart';
 
 class RoomDetailScreen extends StatefulWidget {
@@ -11,10 +13,16 @@ class RoomDetailScreen extends StatefulWidget {
     required this.room,
     super.key,
     this.apiClient,
+    this.onNavigateToTab,
+    this.bookingsController,
   });
 
   final Room room;
   final ApiClient? apiClient;
+  /// Callback to request AppShell to switch tabs. Tab 2 = Bookings.
+  final NavigateToTabCallback? onNavigateToTab;
+  /// Shared BookingsController for immediate reload after booking.
+  final BookingsController? bookingsController;
 
   @override
   State<RoomDetailScreen> createState() => _RoomDetailScreenState();
@@ -95,10 +103,17 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
         room: widget.room,
         initialDates: _selectedDates,
         apiClient: _apiClient,
-        onBookingSuccess: (_) {
+        onBookingSuccess: (booking) {
+          // Refresh availability on the detail screen
           if (_selectedDates != null) {
             _checkAvailability(_selectedDates!);
           }
+
+          // Navigate to Bookings tab (index 2) and reload the list so the new
+          // booking shows up immediately without requiring a manual refresh.
+          widget.onNavigateToTab?.call(2, afterSwitch: () {
+            widget.bookingsController?.onBookingCreated(phone: booking.guestPhone);
+          });
         },
       ),
     );

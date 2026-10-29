@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../bookings/presentation/controllers/bookings_controller.dart';
+import '../../shell/presentation/app_shell.dart';
 import '../domain/room.dart';
 import 'controllers/rooms_controller.dart';
 import 'room_detail_screen.dart';
@@ -8,9 +10,18 @@ import 'room_list_screen.dart';
 import 'widgets/room_card.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key, this.controller});
+  const HomeScreen({
+    super.key,
+    this.controller,
+    this.onNavigateToTab,
+    this.bookingsController,
+  });
 
   final RoomsController? controller;
+  /// Callback that lets this screen request a tab switch in AppShell.
+  final NavigateToTabCallback? onNavigateToTab;
+  /// Shared BookingsController so booking success triggers an immediate reload.
+  final BookingsController? bookingsController;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -457,7 +468,11 @@ class _HomeScreenState extends State<HomeScreen> {
   void _openAllRooms() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => RoomListScreen(initialController: _controller),
+        builder: (_) => RoomListScreen(
+          initialController: _controller,
+          onNavigateToTab: widget.onNavigateToTab,
+          bookingsController: widget.bookingsController,
+        ),
       ),
     );
   }
@@ -468,6 +483,8 @@ class _HomeScreenState extends State<HomeScreen> {
         builder: (_) => RoomListScreen(
           initialRooms: rooms,
           initialController: _controller,
+          onNavigateToTab: widget.onNavigateToTab,
+          bookingsController: widget.bookingsController,
         ),
       ),
     );
@@ -475,7 +492,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _openRoom(Room room) {
     Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => RoomDetailScreen(room: room)),
+      MaterialPageRoute<void>(
+        builder: (_) => RoomDetailScreen(
+          room: room,
+          onNavigateToTab: widget.onNavigateToTab,
+          bookingsController: widget.bookingsController,
+        ),
+      ),
     );
   }
 }
