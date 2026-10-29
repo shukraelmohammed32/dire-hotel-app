@@ -112,16 +112,20 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
       }
     } catch (e) {
       if (mounted) {
-        // Auto-retry once after 8 seconds on first cold-start connection drop
+        // Auto-retry once after a short delay on first failure
         if (!isRetry) {
-          await Future<void>.delayed(const Duration(seconds: 8));
+          await Future<void>.delayed(const Duration(seconds: 3));
           if (mounted) {
             await _fetchPricing(isRetry: true);
           }
           return;
         }
         setState(() {
-          _pricingError = e.toString().replaceFirst('ApiException: ', '').replaceFirst('NetworkException: ', '');
+          _pricingError = e
+              .toString()
+              .replaceFirst('ApiException: ', '')
+              .replaceFirst('NetworkException: ', '')
+              .replaceFirst('TimeoutException: ', '');
           _isLoadingPricing = false;
         });
       }
@@ -200,6 +204,9 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
 
       if (mounted) {
         Navigator.of(context).pop(); // Close bottom sheet
+
+        // Notify the parent (RoomDetailScreen) about the new booking so it can
+        // switch to the Bookings tab and trigger an immediate reload.
         widget.onBookingSuccess?.call(booking);
 
         showDialog<void>(
@@ -207,7 +214,10 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
           builder: (_) => BookingConfirmationDialog(
             booking: booking,
             onViewBookings: () {
-              // Navigated to bookings
+              // onBookingSuccess already navigated to tab 2.  If the user
+              // reaches this callback by tapping "View in My Bookings" in the
+              // dialog, the tab switch has already happened (the shell is now
+              // showing Bookings) so there is nothing extra to do here.
             },
           ),
         );

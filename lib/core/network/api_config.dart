@@ -2,13 +2,18 @@
 class ApiConfig {
   ApiConfig._();
 
-  /// Default API base URL points to the live Render deployment.
-  /// Override at build time via --dart-define for local dev:
-  ///   --dart-define=API_BASE_URL=http://10.0.2.2:3000   (Android emulator → host localhost)
-  ///   --dart-define=API_BASE_URL=http://192.168.x.x:3000 (LAN / real device)
+  /// API base URL.
+  ///
+  /// By default points to the local development server so the app works
+  /// immediately when run against `npm run dev` (or `npm start`).
+  ///
+  /// Override at build/run time via --dart-define:
+  ///   Android emulator  → --dart-define=API_BASE_URL=http://10.0.2.2:3000
+  ///   LAN / real device → --dart-define=API_BASE_URL=http://10.188.80.52:3000
+  ///   Production        → --dart-define=API_BASE_URL=https://your-domain.com
   static const String _defaultBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://ras-hotel-api.onrender.com',
+    defaultValue: 'http://10.0.2.2:3000',
   );
 
   static String _activeBaseUrl = _defaultBaseUrl;
@@ -28,9 +33,8 @@ class ApiConfig {
     _activeBaseUrl = _defaultBaseUrl;
   }
 
-  /// Request timeout. 60s to handle Render free-tier cold starts
-  /// (server spins down after inactivity and needs ~30-50s to wake up).
-  static const Duration timeout = Duration(seconds: 60);
+  /// Request timeout. Long enough for cold starts but not forever.
+  static const Duration timeout = Duration(seconds: 30);
 
   // API Endpoints
   static const String healthPath = '/api/health';

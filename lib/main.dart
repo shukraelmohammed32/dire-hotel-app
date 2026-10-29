@@ -13,7 +13,8 @@ void main() {
   if (kDebugMode) {
     debugPrint('╔══════════════════════════════════════════════════════');
     debugPrint('║  Ras Hotel API → ${ApiConfig.baseUrl}');
-    debugPrint('║  To change: --dart-define=API_BASE_URL=http://...');
+    debugPrint('║  Emulator:    --dart-define=API_BASE_URL=http://10.0.2.2:3000');
+    debugPrint('║  Real device: --dart-define=API_BASE_URL=http://10.188.80.52:3000');
     debugPrint('╚══════════════════════════════════════════════════════');
   }
 

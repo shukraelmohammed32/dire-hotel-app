@@ -1,23 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   Allows cleartext (HTTP) traffic to local development servers.
-  10.0.2.2 = Android emulator → host machine localhost
-  For LAN testing, add your machine's IP in the same pattern.
+  10.0.2.2  = Android emulator → host machine localhost
+  10.188.80.52 = host machine LAN IP (for real devices on the same WiFi)
   Remove or tighten this in production (use HTTPS only).
 -->
 <network-security-config>
-    <!-- Trust system CA for all domains (default) -->
+    <!-- Trust system CA for all domains (HTTPS) -->
     <base-config cleartextTrafficPermitted="false">
         <trust-anchors>
             <certificates src="system"/>
         </trust-anchors>
     </base-config>
 
-    <!-- Explicitly allow HTTP to local dev server addresses -->
+    <!-- Allow HTTP to local dev server addresses -->
     <domain-config cleartextTrafficPermitted="true">
         <!-- Android emulator → host localhost -->
         <domain includeSubdomains="false">10.0.2.2</domain>
-        <!-- Common LAN dev addresses — add yours if different -->
+        <!-- Host machine LAN IP — real device on same WiFi -->
+        <domain includeSubdomains="false">10.188.80.52</domain>
+        <!-- Common LAN ranges -->
         <domain includeSubdomains="false">192.168.1.1</domain>
         <domain includeSubdomains="false">192.168.0.1</domain>
         <domain includeSubdomains="false">localhost</domain>
