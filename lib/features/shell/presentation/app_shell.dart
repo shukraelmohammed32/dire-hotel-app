@@ -5,6 +5,7 @@ import '../../bookings/presentation/bookings_screen.dart';
 import '../../bookings/presentation/controllers/bookings_controller.dart';
 import '../../discover/presentation/discover_screen.dart';
 import '../../home/presentation/home_screen.dart';
+import '../../menu/presentation/menu_screen.dart';
 import '../../profile/presentation/profile_screen.dart';
 
 /// Callback type given to child screens so they can request a tab switch
@@ -45,6 +46,7 @@ class _AppShellState extends State<AppShell> {
     final screens = [
       HomeScreen(onNavigateToTab: _navigateToTab, bookingsController: _bookingsController),
       const DiscoverScreen(),
+      const MenuScreen(),
       BookingsScreen(controller: _bookingsController),
       const ProfileScreen(),
     ];
@@ -75,6 +77,11 @@ class _AppShellState extends State<AppShell> {
             icon: Icon(Icons.search_rounded),
             selectedIcon: Icon(Icons.search_rounded),
             label: 'Discover',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.restaurant_menu_outlined),
+            selectedIcon: Icon(Icons.restaurant_menu_rounded),
+            label: 'Menu',
           ),
           NavigationDestination(
             icon: Icon(Icons.event_note_outlined),
