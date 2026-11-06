@@ -204,20 +204,6 @@ class ApiClient {
       throw const NetworkException();
     } on TimeoutException {
       throw const TimeoutException();
-    } on http.ClientException catch (e) {
-      // Covers connection closed / reset errors (e.g. server cold start).
-      final msg = e.message.toLowerCase();
-      if (msg.contains('closed') || msg.contains('reset') || msg.contains('connection')) {
-        throw const NetworkException(
-          'Service is temporarily unavailable. Please wait a moment and try again.',
-        );
-      }
-      throw const NetworkException();
-    } on FormatException {
-      throw const ApiException('Something went wrong. Please try again.');
-    } catch (e) {
-      if (e is ApiException) rethrow;
-      throw const ApiException('Something went wrong. Please try again.');
     }
   }
 
@@ -233,20 +219,6 @@ class ApiClient {
       throw const NetworkException();
     } on TimeoutException {
       throw const TimeoutException();
-    } on http.ClientException catch (e) {
-      // Same cold-start / connection reset handling as GET.
-      final msg = e.message.toLowerCase();
-      if (msg.contains('closed') || msg.contains('reset') || msg.contains('connection')) {
-        throw const NetworkException(
-          'Service is temporarily unavailable. Please wait a moment and try again.',
-        );
-      }
-      throw const NetworkException();
-    } on FormatException {
-      throw const ApiException('Something went wrong. Please try again.');
-    } catch (e) {
-      if (e is ApiException) rethrow;
-      throw const ApiException('Something went wrong. Please try again.');
     }
   }
 
