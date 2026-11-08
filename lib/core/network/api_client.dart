@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 
 import '../../features/bookings/domain/booking.dart';
 import '../../features/bookings/domain/booking_request.dart';
+import '../../features/bookings/domain/payment.dart';
 import '../../features/dining/domain/dining_reservation.dart';
 import '../../features/dining/domain/dining_reservation_request.dart';
 import '../../features/delivery/domain/delivery_order.dart';
@@ -144,6 +145,43 @@ class ApiClient {
     return Booking.fromJson(bookingJson);
   }
 
+  /// Start or resume a hosted Chapa checkout. The access token is a booking-scoped capability,
+  /// never a Chapa credential, and is sent only over HTTPS to the hotel API.
+  Future<PaymentCheckout> initializePayment({
+    required String invoiceId,
+    required String paymentAccessToken,
+    required String idempotencyKey,
+  }) async {
+    final uri = ApiConfig.buildUri('${ApiConfig.paymentsPath}/initialize');
+    final json = await _post(
+      uri,
+      {'invoiceId': invoiceId, 'idempotencyKey': idempotencyKey},
+      extraHeaders: {'Authorization': 'Bearer $paymentAccessToken'},
+    );
+    final paymentJson = json['payment'] as Map<String, dynamic>?;
+    if (paymentJson == null) {
+      throw const ApiException('Payment checkout could not be started.');
+    }
+    return PaymentCheckout.fromJson(paymentJson);
+  }
+
+  /// Ask the backend to verify an attempt with Chapa and return its trusted status.
+  Future<PaymentVerification> verifyPayment({
+    required String reference,
+    required String paymentAccessToken,
+  }) async {
+    final uri = ApiConfig.buildUri('${ApiConfig.paymentsPath}/$reference/verify');
+    final json = await _get(
+      uri,
+      extraHeaders: {'Authorization': 'Bearer $paymentAccessToken'},
+    );
+    final paymentJson = json['payment'] as Map<String, dynamic>?;
+    if (paymentJson == null) {
+      throw const ApiException('Payment status is not available yet.');
+    }
+    return PaymentVerification.fromJson(paymentJson);
+  }
+
   /// Retrieve bookings belonging to a specific customer using their phone number.
   Future<List<Booking>> getCustomerBookings({
     required String phone,
@@ -203,7 +241,7 @@ class ApiClient {
     final uri = ApiConfig.buildUri(ApiConfig.diningReservationsPath);
     final json = await _post(uri, request.toJson());
 
-    final reservationJson = json as Map<String, dynamic>;
+    final reservationJson = json;
     return DiningReservation.fromJson({
       'id': reservationJson['reservationId'] ?? 'DIN-${DateTime.now().millisecondsSinceEpoch}',
       'createdAt': DateTime.now().toIso8601String(),
@@ -235,7 +273,7 @@ class ApiClient {
     final uri = ApiConfig.buildUri(ApiConfig.eventsBookingsPath);
     final json = await _post(uri, request.toJson());
 
-    final bookingJson = json as Map<String, dynamic>;
+    final bookingJson = json;
     return EventBooking.fromJson({
       'id': bookingJson['bookingId'] ?? 'EVT-${DateTime.now().millisecondsSinceEpoch}',
       'createdAt': DateTime.now().toIso8601String(),
@@ -267,7 +305,7 @@ class ApiClient {
     final uri = ApiConfig.buildUri(ApiConfig.deliveryOrdersPath);
     final json = await _post(uri, request.toJson());
 
-    final orderJson = json as Map<String, dynamic>;
+    final orderJson = json;
     return DeliveryOrder.fromJson({
       'id': orderJson['orderId'] ?? 'DEL-${DateTime.now().millisecondsSinceEpoch}',
       'createdAt': DateTime.now().toIso8601String(),
@@ -295,10 +333,10 @@ class ApiClient {
   }
 
   /// Internal GET helper that handles timeouts and converts HTTP responses.
-  Future<Map<String, dynamic>> _get(Uri uri) async {
+  Future<Map<String, dynamic>> _get(Uri uri, {Map<String, String>? extraHeaders}) async {
     try {
       final response = await _client
-          .get(uri, headers: _headers)
+          .get(uri, headers: {..._headers, ...?extraHeaders})
           .timeout(ApiConfig.timeout);
 
       return _handleResponse(response);
@@ -310,10 +348,10 @@ class ApiClient {
   }
 
   /// Internal POST helper that handles timeouts and converts HTTP responses.
-  Future<Map<String, dynamic>> _post(Uri uri, Map<String, dynamic> payload) async {
+  Future<Map<String, dynamic>> _post(Uri uri, Map<String, dynamic> payload, {Map<String, String>? extraHeaders}) async {
     try {
       final response = await _client
-          .post(uri, headers: _headers, body: jsonEncode(payload))
+          .post(uri, headers: {..._headers, ...?extraHeaders}, body: jsonEncode(payload))
           .timeout(ApiConfig.timeout);
 
       return _handleResponse(response);

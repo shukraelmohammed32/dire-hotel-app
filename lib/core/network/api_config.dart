@@ -42,6 +42,7 @@ class ApiConfig {
   static const String availabilityPath = '/api/availability';
   static const String pricingPath = '/api/pricing';
   static const String bookingsPath = '/api/bookings';
+  static const String paymentsPath = '/api/payments';
   static const String diningReservationsPath = '/api/dining/reservations';
   static const String eventsBookingsPath = '/api/events/bookings';
   static const String deliveryOrdersPath = '/api/delivery/orders';

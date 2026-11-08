@@ -19,6 +19,9 @@ class Booking {
     this.guestEmail,
     this.specialRequests,
     this.invoiceNo,
+    this.invoiceId,
+    this.invoiceStatus,
+    this.paymentAccessToken,
     required this.totalEtb,
   });
 
@@ -38,6 +41,9 @@ class Booking {
   final String? guestEmail;
   final String? specialRequests;
   final String? invoiceNo;
+  final String? invoiceId;
+  final String? invoiceStatus;
+  final String? paymentAccessToken;
   final double totalEtb;
 
   bool get isCancellable => status == 'CONFIRMED' || status == 'PENDING';
@@ -138,9 +144,35 @@ class Booking {
       guestPhone: (guestJson['phone'] ?? '').toString(),
       guestEmail: guestJson['email'] as String?,
       invoiceNo: invoiceJson['invoiceNo'] as String?,
+      invoiceId: invoiceJson['id'] as String?,
+      invoiceStatus: invoiceJson['status'] as String?,
+      paymentAccessToken: json['paymentAccessToken'] as String?,
       totalEtb: total,
     );
   }
+
+  Booking withPaymentAccessToken(String? token) => Booking(
+        id: id,
+        confirmationNo: confirmationNo,
+        status: status,
+        checkInDate: checkInDate,
+        checkOutDate: checkOutDate,
+        nights: nights,
+        adults: adults,
+        children: children,
+        createdAt: createdAt,
+        pricing: pricing,
+        room: room,
+        guestName: guestName,
+        guestPhone: guestPhone,
+        guestEmail: guestEmail,
+        specialRequests: specialRequests,
+        invoiceNo: invoiceNo,
+        invoiceId: invoiceId,
+        invoiceStatus: invoiceStatus,
+        paymentAccessToken: token,
+        totalEtb: totalEtb,
+      );
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -161,7 +193,9 @@ class Booking {
           'email': guestEmail,
         },
         'invoice': {
+          'id': invoiceId,
           'invoiceNo': invoiceNo,
+          'status': invoiceStatus,
           'total': totalEtb,
         },
       };

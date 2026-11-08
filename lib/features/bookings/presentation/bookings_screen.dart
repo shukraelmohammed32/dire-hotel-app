@@ -5,6 +5,7 @@ import 'package:mobile/core/theme/app_theme.dart';
 import 'package:mobile/core/utils/price_formatter.dart';
 import '../domain/booking.dart';
 import 'controllers/bookings_controller.dart';
+import 'payment_status_screen.dart';
 
 class BookingsScreen extends StatefulWidget {
   const BookingsScreen({
@@ -530,6 +531,23 @@ class _BookingsScreenState extends State<BookingsScreen> {
                 ),
             ],
           ),
+          if (booking.invoiceId != null &&
+              booking.paymentAccessToken != null &&
+              booking.invoiceStatus != 'PAID' &&
+              booking.invoiceStatus != 'VOID' &&
+              booking.invoiceStatus != 'REFUNDED') ...[
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(
+                  builder: (_) => PaymentStatusScreen(booking: booking),
+                )),
+                icon: const Icon(Icons.lock_outline_rounded),
+                label: const Text('Pay or check payment status'),
+              ),
+            ),
+          ],
         ],
       ),
     );

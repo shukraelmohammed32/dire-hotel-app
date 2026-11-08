@@ -69,7 +69,10 @@ class BookingsController extends ChangeNotifier {
 
     try {
       final fetched = await _apiClient.getCustomerBookings(phone: targetPhone);
-      _bookings = fetched;
+      _bookings = await Future.wait(fetched.map((booking) async {
+        final token = await CustomerSession.instance.getPaymentAccessToken(booking.confirmationNo);
+        return booking.withPaymentAccessToken(token);
+      }));
       _errorMessage = null;
       _lastRefreshed = DateTime.now();
     } on AuthorizationException catch (e) {

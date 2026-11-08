@@ -201,6 +201,12 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
         name: request.guestName,
         email: request.guestEmail,
       );
+      if (booking.paymentAccessToken != null) {
+        await CustomerSession.instance.savePaymentAccessToken(
+          booking.confirmationNo,
+          booking.paymentAccessToken!,
+        );
+      }
 
       if (mounted) {
         Navigator.of(context).pop(); // Close bottom sheet

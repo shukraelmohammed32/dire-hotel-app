@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/price_formatter.dart';
 import '../domain/booking.dart';
+import 'payment_status_screen.dart';
 
 class BookingConfirmationDialog extends StatelessWidget {
   const BookingConfirmationDialog({
@@ -111,6 +112,21 @@ class BookingConfirmationDialog extends StatelessWidget {
             _detailRow('Guests', '${booking.adults} Adults${booking.children > 0 ? ", ${booking.children} Children" : ""}'),
             _detailRow('Total (inc. VAT)', '${formatEtb(booking.totalEtb.round())} ETB'),
             const SizedBox(height: 22),
+            if (booking.invoiceId != null && booking.paymentAccessToken != null) ...[
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).push(MaterialPageRoute<void>(
+                      builder: (_) => PaymentStatusScreen(booking: booking),
+                    ));
+                  },
+                  icon: const Icon(Icons.lock_outline_rounded),
+                  label: const Text('Pay securely with Chapa'),
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
             SizedBox(
               width: double.infinity,
               child: FilledButton(
