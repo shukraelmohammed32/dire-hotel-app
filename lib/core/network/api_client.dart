@@ -6,6 +6,12 @@ import 'package:http/http.dart' as http;
 
 import '../../features/bookings/domain/booking.dart';
 import '../../features/bookings/domain/booking_request.dart';
+import '../../features/dining/domain/dining_reservation.dart';
+import '../../features/dining/domain/dining_reservation_request.dart';
+import '../../features/delivery/domain/delivery_order.dart';
+import '../../features/delivery/domain/delivery_order_request.dart';
+import '../../features/events/domain/event_booking.dart';
+import '../../features/events/domain/event_booking_request.dart';
 import '../../features/home/domain/availability.dart';
 import '../../features/home/domain/pricing.dart';
 import '../../features/home/domain/room.dart';
@@ -190,6 +196,102 @@ class ApiClient {
 
     final json = await _post(uri, payload);
     return json['ok'] as bool? ?? false;
+  }
+
+  /// Create a dining reservation.
+  Future<DiningReservation> createDiningReservation(DiningReservationRequest request) async {
+    final uri = ApiConfig.buildUri(ApiConfig.diningReservationsPath);
+    final json = await _post(uri, request.toJson());
+
+    final reservationJson = json as Map<String, dynamic>;
+    return DiningReservation.fromJson({
+      'id': reservationJson['reservationId'] ?? 'DIN-${DateTime.now().millisecondsSinceEpoch}',
+      'createdAt': DateTime.now().toIso8601String(),
+      'metadata': request.toJson(),
+    });
+  }
+
+  /// Retrieve dining reservations for a customer.
+  Future<List<DiningReservation>> getCustomerDiningReservations({
+    required String phone,
+    String? email,
+  }) async {
+    final queryParams = <String, String>{
+      'phone': phone.trim(),
+      if (email != null && email.trim().isNotEmpty) 'email': email.trim(),
+    };
+
+    final uri = ApiConfig.buildUri(ApiConfig.diningReservationsPath, queryParams);
+    final json = await _get(uri);
+
+    final rawList = json['reservations'] as List<dynamic>? ?? [];
+    return rawList
+        .map((item) => DiningReservation.fromJson(item as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// Create an event booking.
+  Future<EventBooking> createEventBooking(EventBookingRequest request) async {
+    final uri = ApiConfig.buildUri(ApiConfig.eventsBookingsPath);
+    final json = await _post(uri, request.toJson());
+
+    final bookingJson = json as Map<String, dynamic>;
+    return EventBooking.fromJson({
+      'id': bookingJson['bookingId'] ?? 'EVT-${DateTime.now().millisecondsSinceEpoch}',
+      'createdAt': DateTime.now().toIso8601String(),
+      'metadata': request.toJson(),
+    });
+  }
+
+  /// Retrieve event bookings for a customer.
+  Future<List<EventBooking>> getCustomerEventBookings({
+    required String phone,
+    String? email,
+  }) async {
+    final queryParams = <String, String>{
+      'phone': phone.trim(),
+      if (email != null && email.trim().isNotEmpty) 'email': email.trim(),
+    };
+
+    final uri = ApiConfig.buildUri(ApiConfig.eventsBookingsPath, queryParams);
+    final json = await _get(uri);
+
+    final rawList = json['bookings'] as List<dynamic>? ?? [];
+    return rawList
+        .map((item) => EventBooking.fromJson(item as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// Create a delivery order.
+  Future<DeliveryOrder> createDeliveryOrder(DeliveryOrderRequest request) async {
+    final uri = ApiConfig.buildUri(ApiConfig.deliveryOrdersPath);
+    final json = await _post(uri, request.toJson());
+
+    final orderJson = json as Map<String, dynamic>;
+    return DeliveryOrder.fromJson({
+      'id': orderJson['orderId'] ?? 'DEL-${DateTime.now().millisecondsSinceEpoch}',
+      'createdAt': DateTime.now().toIso8601String(),
+      'metadata': request.toJson(),
+    });
+  }
+
+  /// Retrieve delivery orders for a customer.
+  Future<List<DeliveryOrder>> getCustomerDeliveryOrders({
+    required String phone,
+    String? email,
+  }) async {
+    final queryParams = <String, String>{
+      'phone': phone.trim(),
+      if (email != null && email.trim().isNotEmpty) 'email': email.trim(),
+    };
+
+    final uri = ApiConfig.buildUri(ApiConfig.deliveryOrdersPath, queryParams);
+    final json = await _get(uri);
+
+    final rawList = json['orders'] as List<dynamic>? ?? [];
+    return rawList
+        .map((item) => DeliveryOrder.fromJson(item as Map<String, dynamic>))
+        .toList();
   }
 
   /// Internal GET helper that handles timeouts and converts HTTP responses.

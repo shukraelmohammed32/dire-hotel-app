@@ -3,7 +3,13 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../bookings/presentation/bookings_screen.dart';
 import '../../bookings/presentation/controllers/bookings_controller.dart';
+import '../../dining/presentation/dining_reservations_screen.dart';
+import '../../dining/presentation/controllers/dining_reservations_controller.dart';
+import '../../delivery/presentation/delivery_orders_screen.dart';
+import '../../delivery/presentation/controllers/delivery_orders_controller.dart';
 import '../../discover/presentation/discover_screen.dart';
+import '../../events/presentation/event_bookings_screen.dart';
+import '../../events/presentation/controllers/event_bookings_controller.dart';
 import '../../home/presentation/home_screen.dart';
 import '../../menu/presentation/menu_screen.dart';
 import '../../profile/presentation/profile_screen.dart';
@@ -26,6 +32,9 @@ class _AppShellState extends State<AppShell> {
   /// successful booking in HomeScreen / RoomDetailScreen can trigger a reload
   /// in the Bookings tab without rebuilding or re-creating anything.
   final BookingsController _bookingsController = BookingsController();
+  final DiningReservationsController _diningController = DiningReservationsController();
+  final EventBookingsController _eventsController = EventBookingsController();
+  final DeliveryOrdersController _deliveryController = DeliveryOrdersController();
 
   /// Switches to [tabIndex] and, after the frame settles, fires [afterSwitch].
   void _navigateToTab(int tabIndex, {VoidCallback? afterSwitch}) {
@@ -38,6 +47,9 @@ class _AppShellState extends State<AppShell> {
   @override
   void dispose() {
     _bookingsController.dispose();
+    _diningController.dispose();
+    _eventsController.dispose();
+    _deliveryController.dispose();
     super.dispose();
   }
 
@@ -48,6 +60,9 @@ class _AppShellState extends State<AppShell> {
       const DiscoverScreen(),
       const MenuScreen(),
       BookingsScreen(controller: _bookingsController),
+      DiningReservationsScreen(controller: _diningController),
+      EventBookingsScreen(controller: _eventsController),
+      DeliveryOrdersScreen(controller: _deliveryController),
       const ProfileScreen(),
     ];
 
@@ -87,6 +102,21 @@ class _AppShellState extends State<AppShell> {
             icon: Icon(Icons.event_note_outlined),
             selectedIcon: Icon(Icons.event_note_rounded),
             label: 'Bookings',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.restaurant_outlined),
+            selectedIcon: Icon(Icons.restaurant_rounded),
+            label: 'Dining',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.event_outlined),
+            selectedIcon: Icon(Icons.event_rounded),
+            label: 'Events',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.delivery_dining_outlined),
+            selectedIcon: Icon(Icons.delivery_dining_rounded),
+            label: 'Delivery',
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline_rounded),

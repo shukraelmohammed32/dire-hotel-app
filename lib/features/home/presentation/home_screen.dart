@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../bookings/presentation/controllers/bookings_controller.dart';
+import '../../dining/presentation/dining_reservation_flow_sheet.dart';
+import '../../delivery/presentation/delivery_order_flow_sheet.dart';
+import '../../events/presentation/event_booking_flow_sheet.dart';
 import '../../shell/presentation/app_shell.dart';
 import '../domain/room.dart';
 import 'controllers/rooms_controller.dart';
@@ -87,6 +90,25 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     SliverToBoxAdapter(
                       child: _buildFeaturedSection(horizontalPadding),
+                    ),
+                    SliverPadding(
+                      padding: EdgeInsets.fromLTRB(horizontalPadding, 28, horizontalPadding, 12),
+                      sliver: SliverToBoxAdapter(
+                        child: Row(
+                          children: [
+                            Text(
+                              'Quick Actions',
+                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    fontFamily: 'serif',
+                                    fontSize: 24,
+                                  ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SliverToBoxAdapter(
+                      child: _buildQuickActionsSection(horizontalPadding),
                     ),
                     const SliverPadding(padding: EdgeInsets.only(bottom: 28)),
                   ],
@@ -397,6 +419,99 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildQuickActionsSection(double horizontalPadding) {
+    return Padding(
+      padding: EdgeInsets.only(left: horizontalPadding, right: horizontalPadding),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _QuickActionCard(
+                  icon: Icons.restaurant_outlined,
+                  title: 'Reserve a Table',
+                  subtitle: 'Ras Restaurant & Bar',
+                  color: const Color(0xFF8B0000),
+                  onTap: _openDiningReservation,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _QuickActionCard(
+                  icon: Icons.event_outlined,
+                  title: 'Plan an Event',
+                  subtitle: 'Ras Hotel Events',
+                  color: const Color(0xFF5D3A1A),
+                  onTap: _openEventBooking,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _QuickActionCard(
+                  icon: Icons.delivery_dining_outlined,
+                  title: 'Order Delivery',
+                  subtitle: 'Food to your door',
+                  color: const Color(0xFF1B5E20),
+                  onTap: _openDeliveryOrder,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _QuickActionCard(
+                  icon: Icons.spa_outlined,
+                  title: 'Spa & Wellness',
+                  subtitle: 'Relax & rejuvenate',
+                  color: const Color(0xFF0D47A1),
+                  onTap: _openSpaPlaceholder,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openDiningReservation() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const DiningReservationFlowSheet(),
+    );
+  }
+
+  void _openEventBooking() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const EventBookingFlowSheet(),
+    );
+  }
+
+  void _openDeliveryOrder() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const DeliveryOrderFlowSheet(),
+    );
+  }
+
+  void _openSpaPlaceholder() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Spa bookings coming soon!')),
+    );
+  }
+
   void _showNotificationsPlaceholder() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('No new notifications.')),
@@ -552,6 +667,90 @@ class _SelectionButton extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _QuickActionCard extends StatelessWidget {
+  const _QuickActionCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.color,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          height: 120,
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                color.withOpacity(0.9),
+                color.withOpacity(0.7),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: color.withOpacity(0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: Colors.white, size: 24),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
